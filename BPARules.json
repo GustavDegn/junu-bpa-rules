@@ -6,7 +6,7 @@
     "Description": "No two measures should have the same definition.",
     "Severity": 2,
     "Scope": "Measure",
-    "Expression": "let\n\texpressions = Model.AllMeasures.Expression; \n\tuniqueExpressions = expressions.Distinct();\nreturn\n\tCountRows(expressions) > CountRows(uniqueExpressions)",
+    "Expression": "Model.AllMeasures.Any(m => m != this && m.Expression == Expression)",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -17,7 +17,7 @@
     "Description": "The DIVIDE function is more efficient and provides better error handling than the division operator \"/\".",
     "Severity": 2,
     "Scope": "Measure,CalculatedColumn,CalculatedTable,CalculationItem",
-    "Expression": "Search(\"/\", Expression) > 0 && Search(\"DIVIDE\", Expression) == 0",
+    "Expression": "Expression != null && Expression.Contains(\"/\") && !Expression.ToUpper().Contains(\"DIVIDE\")",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -28,7 +28,7 @@
     "Description": "An inactive relationship is only useful if it is activated in a measure using the USERELATIONSHIP function. Otherwise, it is redundant.",
     "Severity": 2,
     "Scope": "Relationship",
-    "Expression": "!IsActive && CountRows(Model.AllMeasures.Where(Search(\"USERELATIONSHIP\", Expression) > 0)) == 0",
+    "Expression": "!IsActive && !Model.AllMeasures.Any(m => m.Expression != null && m.Expression.ToUpper().Contains(\"USERELATIONSHIP\"))",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -61,7 +61,7 @@
     "Description": "It is good practice to set SummarizeBy to None on numeric columns that you do not want to aggregate.",
     "Severity": 3,
     "Scope": "Column",
-    "Expression": "DataType.In({\"Int64\",\"Double\",\"Decimal\"}) && SummarizeBy != \"None\" && !IsKey && !IsHidden && !IsCalculated",
+    "Expression": "(DataType == \"Int64\" || DataType == \"Double\" || DataType == \"Decimal\") && SummarizeBy != \"None\" && !IsKey && !IsHidden && !IsCalculated",
     "FixExpression": "SummarizeBy = \"None\"",
     "CompatibilityLevel": 1200
   },
@@ -116,7 +116,7 @@
     "Description": "Referential integrity violations may lead to unexpected query results. Fix violations by removing invalid rows from the related table, or by removing the relationship.",
     "Severity": 2,
     "Scope": "Relationship",
-    "Expression": "CountRows(Violations) > 0",
+    "Expression": "Violations != null && Violations.Count > 0",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -149,7 +149,7 @@
     "Description": "Bi-directional relationships can lead to expensive queries, especially when used against high-cardinality columns.",
     "Severity": 2,
     "Scope": "Relationship",
-    "Expression": "(CrossFilteringBehavior == \"BothDirections\" || CrossFilteringBehavior == \"Automatic\") && (FromColumn.Cardinality > 100000 || ToColumn.Cardinality > 100000)",
+    "Expression": "(CrossFilteringBehavior == \"BothDirections\" || CrossFilteringBehavior == \"Automatic\") && ((FromColumn != null && FromColumn.Cardinality > 100000) || (ToColumn != null && ToColumn.Cardinality > 100000))",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -160,7 +160,7 @@
     "Description": "Long-length columns with high cardinality can consume a lot of memory. Consider reducing the length or cardinality of these columns.",
     "Severity": 2,
     "Scope": "Column",
-    "Expression": "(DataType == \"String\") && (Cardinality > 100000) && (MaxLength > 50) && !IsHidden",
+    "Expression": "DataType == \"String\" && Cardinality > 100000 && MaxLength > 50 && !IsHidden",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -171,7 +171,7 @@
     "Description": "Snowflake schemas can lead to more complex queries and may reduce performance. Consider a star-schema instead.",
     "Severity": 2,
     "Scope": "Model",
-    "Expression": "CountRows(Model.Tables.Where(TableRelationships.Count > 1 && !IsFact && !IsHidden)) > 0",
+    "Expression": "Model.Tables.Count(t => t.TableRelationships.Count > 1 && !t.IsFact && !t.IsHidden) > 0",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -182,7 +182,7 @@
     "Description": "Auto-date tables can increase model size and reduce performance. Consider disabling Auto date/time in Power BI Desktop.",
     "Severity": 2,
     "Scope": "Model",
-    "Expression": "Model.Tables.Any(IsDateTable && IsHidden && Name.StartsWith(\"LocalDateTable_\"))",
+    "Expression": "Model.Tables.Any(t => t.IsDateTable && t.IsHidden && t.Name != null && t.Name.StartsWith(\"LocalDateTable_\"))",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
@@ -215,7 +215,7 @@
     "Description": "Redundant columns in related tables may increase model size. Consider removing unused columns.",
     "Severity": 2,
     "Scope": "Table",
-    "Expression": "TableRelationships.Count > 0 && Columns.Any(!IsHidden && !IsKey && !UsedInRelationships && !ReferencedByMeasures && !ReferencedByCalculatedColumns && !ReferencedByCalculatedTables && !ReferencedInRoles && !ReferencedInPerspectives && !ReferencedInPartitions && !UsedInSortBy && !UsedInHierarchy)",
+    "Expression": "TableRelationships.Count > 0 && Columns.Any(c => !c.IsHidden && !c.IsKey && !c.UsedInRelationships && !c.ReferencedByMeasures && !c.ReferencedByCalculatedColumns && !c.ReferencedByCalculatedTables && !c.ReferencedInRoles && !c.ReferencedInPerspectives && !c.ReferencedInPartitions && !c.UsedInSortBy && !c.UsedInHierarchy)",
     "FixExpression": "",
     "CompatibilityLevel": 1200
   },
