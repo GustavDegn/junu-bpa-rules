@@ -1,0 +1,233 @@
+[
+  {
+    "ID": "AVOID_DUPLICATE_MEASURES",
+    "Name": "[DAX Expressions] No two measures should have the same definition",
+    "Category": "DAX Expressions",
+    "Description": "No two measures should have the same definition.",
+    "Severity": 2,
+    "Scope": "Measure",
+    "Expression": "let\n\texpressions = Model.AllMeasures.Expression; \n\tuniqueExpressions = expressions.Distinct();\nreturn\n\tCountRows(expressions) > CountRows(uniqueExpressions)",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "USE_THE_DIVIDE_FUNCTION_FOR_DIVISION",
+    "Name": "[DAX Expressions] Use the DIVIDE function for division",
+    "Category": "DAX Expressions",
+    "Description": "The DIVIDE function is more efficient and provides better error handling than the division operator \"/\".",
+    "Severity": 2,
+    "Scope": "Measure,CalculatedColumn,CalculatedTable,CalculationItem",
+    "Expression": "Search(\"/\", Expression) > 0 && Search(\"DIVIDE\", Expression) == 0",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "INACTIVE_RELATIONSHIPS_THAT_ARE_NEVER_ACTIVATED",
+    "Name": "[DAX Expressions] Inactive relationships that are never activated",
+    "Category": "DAX Expressions",
+    "Description": "An inactive relationship is only useful if it is activated in a measure using the USERELATIONSHIP function. Otherwise, it is redundant.",
+    "Severity": 2,
+    "Scope": "Relationship",
+    "Expression": "!IsActive && CountRows(Model.AllMeasures.Where(Search(\"USERELATIONSHIP\", Expression) > 0)) == 0",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "RELATIONSHIP_COLUMNS_SAME_DATA_TYPE",
+    "Name": "[Error Prevention] Relationship columns should be of the same data type",
+    "Category": "Error Prevention",
+    "Description": "Relationship columns should be of the same data type.",
+    "Severity": 3,
+    "Scope": "Relationship",
+    "Expression": "FromColumn.DataType != ToColumn.DataType",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SET_ISAVAILABLEINMDX_TO_TRUE_ON_NECESSARY_COLUMNS",
+    "Name": "[Error Prevention] Set IsAvailableInMdx to true on necessary columns",
+    "Category": "Error Prevention",
+    "Description": "Columns used in hierarchies or as sort-by columns, should have IsAvailableInMdx set to true.",
+    "Severity": 3,
+    "Scope": "Column",
+    "Expression": "(!IsAvailableInMdx) && (UsedInSortBy || UsedInHierarchy)",
+    "FixExpression": "IsAvailableInMdx = true",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "NUMERIC_COLUMN_SUMMARIZE_BY",
+    "Name": "[Formatting] Do not summarize numeric columns",
+    "Category": "Formatting",
+    "Description": "It is good practice to set SummarizeBy to None on numeric columns that you do not want to aggregate.",
+    "Severity": 3,
+    "Scope": "Column",
+    "Expression": "DataType.In({\"Int64\",\"Double\",\"Decimal\"}) && SummarizeBy != \"None\" && !IsKey && !IsHidden && !IsCalculated",
+    "FixExpression": "SummarizeBy = \"None\"",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "RELATIONSHIP_COLUMNS_SHOULD_BE_OF_INTEGER_DATA_TYPE",
+    "Name": "[Formatting] Relationship columns should be of integer data type",
+    "Category": "Formatting",
+    "Description": "Relationship columns should be of integer data type.",
+    "Severity": 1,
+    "Scope": "Relationship",
+    "Expression": "FromColumn.DataType != \"Int64\" || ToColumn.DataType != \"Int64\"",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "HIDE_FOREIGN_KEYS",
+    "Name": "[Formatting] Hide foreign keys",
+    "Category": "Formatting",
+    "Description": "Foreign keys should generally be hidden.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "!IsHidden && DataType == \"Int64\" && UsedInRelationships && !IsKey",
+    "FixExpression": "IsHidden = true",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "HIDE_FACT_TABLE_COLUMNS",
+    "Name": "[Formatting] Hide fact table columns",
+    "Category": "Formatting",
+    "Description": "Columns in fact tables should generally be hidden.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "!IsHidden && Table.IsFact && !IsKey && !UsedInRelationships && !UsedInSortBy && !UsedInHierarchy && !IsCalculated && !IsNameInferred",
+    "FixExpression": "IsHidden = true",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "UNNECESSARY_COLUMNS",
+    "Name": "[Maintenance] Remove unnecessary columns",
+    "Category": "Maintenance",
+    "Description": "Remove columns that are not referenced by any measures, calculated columns, calculated tables, roles, perspectives, sort-by columns, hierarchies, relationships, or partitions.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "!UsedInRelationships && !UsedInSortBy && !UsedInHierarchy && !ReferencedByMeasures && !ReferencedByCalculatedColumns && !ReferencedByCalculatedTables && !ReferencedInRoles && !ReferencedInPerspectives && !ReferencedInPartitions && !IsKey && !IsHidden",
+    "FixExpression": "Delete();",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "FIX_REFERENTIAL_INTEGRITY_VIOLATIONS",
+    "Name": "[Maintenance] Fix referential integrity violations",
+    "Category": "Maintenance",
+    "Description": "Referential integrity violations may lead to unexpected query results. Fix violations by removing invalid rows from the related table, or by removing the relationship.",
+    "Severity": 2,
+    "Scope": "Relationship",
+    "Expression": "CountRows(Violations) > 0",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "ENSURE_TABLES_HAVE_RELATIONSHIPS",
+    "Name": "[Maintenance] Ensure tables have relationships",
+    "Category": "Maintenance",
+    "Description": "Ensure tables have at least one relationship. Tables without relationships will not filter other tables.",
+    "Severity": 1,
+    "Scope": "Table",
+    "Expression": "TableRelationships.Count == 0 && !IsHidden && !IsPrivate",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "AVOID_FLOATING_POINT_DATA_TYPES",
+    "Name": "[Performance] Do not use floating point data types",
+    "Category": "Performance",
+    "Description": "Floating point data types (Double) are not recommended due to potential rounding issues. Consider using Decimal instead.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "DataType == \"Double\"",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "AVOID_BI-DIRECTIONAL_RELATIONSHIPS_AGAINST_HIGH-CARDINALITY_COLUMNS",
+    "Name": "[Performance] Avoid bi-directional relationships against high-cardinality columns",
+    "Category": "Performance",
+    "Description": "Bi-directional relationships can lead to expensive queries, especially when used against high-cardinality columns.",
+    "Severity": 2,
+    "Scope": "Relationship",
+    "Expression": "(CrossFilteringBehavior == \"BothDirections\" || CrossFilteringBehavior == \"Automatic\") && (FromColumn.Cardinality > 100000 || ToColumn.Cardinality > 100000)",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "REDUCE_USAGE_OF_LONG-LENGTH_COLUMNS_WITH_HIGH_CARDINALITY",
+    "Name": "[Performance] Reduce usage of long-length columns with high cardinality",
+    "Category": "Performance",
+    "Description": "Long-length columns with high cardinality can consume a lot of memory. Consider reducing the length or cardinality of these columns.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "(DataType == \"String\") && (Cardinality > 100000) && (MaxLength > 50) && !IsHidden",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "SNOWFLAKE_SCHEMA_ARCHITECTURE",
+    "Name": "[Performance] Consider a star-schema instead of a snowflake architecture",
+    "Category": "Performance",
+    "Description": "Snowflake schemas can lead to more complex queries and may reduce performance. Consider a star-schema instead.",
+    "Severity": 2,
+    "Scope": "Model",
+    "Expression": "CountRows(Model.Tables.Where(TableRelationships.Count > 1 && !IsFact && !IsHidden)) > 0",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "REMOVE_AUTO-DATE_TABLE",
+    "Name": "[Performance] Remove auto-date table",
+    "Category": "Performance",
+    "Description": "Auto-date tables can increase model size and reduce performance. Consider disabling Auto date/time in Power BI Desktop.",
+    "Severity": 2,
+    "Scope": "Model",
+    "Expression": "Model.Tables.Any(IsDateTable && IsHidden && Name.StartsWith(\"LocalDateTable_\"))",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "MANY-TO-MANY_RELATIONSHIPS_SHOULD_BE_SINGLE-DIRECTION",
+    "Name": "[Performance] Many-to-many relationships should be single-direction",
+    "Category": "Performance",
+    "Description": "Many-to-many relationships should generally be single-direction to avoid ambiguous filter propagation and improve performance.",
+    "Severity": 2,
+    "Scope": "Relationship",
+    "Expression": "Cardinality == \"ManyToMany\" && (CrossFilteringBehavior == \"BothDirections\" || CrossFilteringBehavior == \"Automatic\")",
+    "FixExpression": "CrossFilteringBehavior = \"OneDirection\"",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "REDUCE_USAGE_OF_CALCULATED_TABLES",
+    "Name": "[Performance] Reduce usage of calculated tables",
+    "Category": "Performance",
+    "Description": "Calculated tables increase model size and may slow down refresh. Consider using Power Query instead.",
+    "Severity": 2,
+    "Scope": "Table",
+    "Expression": "TableType == \"Calculated\" && !IsHidden",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "REMOVE_REDUNDANT_COLUMNS_IN_RELATED_TABLES",
+    "Name": "[Performance] Remove redundant columns in related tables",
+    "Category": "Performance",
+    "Description": "Redundant columns in related tables may increase model size. Consider removing unused columns.",
+    "Severity": 2,
+    "Scope": "Table",
+    "Expression": "TableRelationships.Count > 0 && Columns.Any(!IsHidden && !IsKey && !UsedInRelationships && !ReferencedByMeasures && !ReferencedByCalculatedColumns && !ReferencedByCalculatedTables && !ReferencedInRoles && !ReferencedInPerspectives && !ReferencedInPartitions && !UsedInSortBy && !UsedInHierarchy)",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  },
+  {
+    "ID": "REDUCE_NUMBER_OF_CALCULATED_COLUMNS",
+    "Name": "[Performance] Reduce number of calculated columns",
+    "Category": "Performance",
+    "Description": "Calculated columns increase model size and may slow down refresh. Consider using Power Query or measures instead.",
+    "Severity": 2,
+    "Scope": "Column",
+    "Expression": "IsCalculated && !IsHidden",
+    "FixExpression": "",
+    "CompatibilityLevel": 1200
+  }
+]
