@@ -11,23 +11,30 @@ Dette repo er vores *single source of truth* for BPA-rulesettet (`BPARules.json`
 ```csharp
 using System;
 using System.IO;
+using System.Net;
 
-string source = @"C:\temp\BPARules.json";
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+string url = "https://raw.githubusercontent.com/GustavDegn/junu-bpa-rules/main/BPARules.json";
 
 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-string teFolder = Path.Combine(localAppData, "TabularEditor3"); // TE3
+string teFolder = Path.Combine(localAppData, "TabularEditor3");
 Directory.CreateDirectory(teFolder);
 
 string dest = Path.Combine(teFolder, "BPARules.json");
 string backup = Path.Combine(teFolder, $"BPARules.backup.{DateTime.Now:yyyyMMdd_HHmmss}.json");
 
-if (!File.Exists(source)) throw new FileNotFoundException("Source file not found: " + source);
-
-// backup
 if (File.Exists(dest)) File.Copy(dest, backup, true);
 
-// copy
-File.Copy(source, dest, true);
+using (var w = new WebClient())
+{
+    w.Headers.Add(HttpRequestHeader.Accept, "application/json");
+    w.DownloadFile(url, dest);
+}
 
-Info($"✅ BPA-regler kopieret til:\n{dest}\n\nÅbn BPA-vinduet og tjek 'Rules for the local user'. Genstart TE hvis de ikke dukker op med det samme.");
+var text = File.ReadAllText(dest).TrimStart();
+if (!text.StartsWith("["))
+    throw new Exception("Downloaded file does not look like JSON (maybe an error page).");
+
+Info($"✅ BPA-regler installeret til:\n{dest}\n\nGenåbn BPA-vinduet eller genstart Tabular Editor hvis de ikke dukker op med det samme.");
 
