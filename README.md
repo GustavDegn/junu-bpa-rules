@@ -2,7 +2,7 @@
 
 Fælles **Best Practice Analyzer (BPA)**-regler til **Tabular Editor**.
 
-Dette repo er vores *single source of truth* for BPA-rulesettet (`BPARules.json`). Scriptet herunder henter altid den nyeste version fra Azure DevOps og installerer den i din lokale Tabular Editor rules-mappe.
+Dette repo er vores *single source of truth* for BPA-rulesettet (`BPARules.json`).
 
 ## Installer via Tabular Editor “Advanced Scripting”
 
