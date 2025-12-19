@@ -62,15 +62,16 @@
     "CompatibilityLevel": 1200
   },
   {
-    "ID": "RELATIONSHIP_COLUMNS_SHOULD_BE_OF_INTEGER_DATA_TYPE",
-    "Name": "[Formatting] Relationship columns should be of integer data type",
-    "Category": "Formatting",
-    "Description": "It is a best practice for relationship columns to be of integer data type.",
-    "Severity": 1,
-    "Scope": "Relationship",
-    "Expression": "FromColumn.DataType != DataType.Int64 or ToColumn.DataType != DataType.Int64",
-    "CompatibilityLevel": 1200
-  },
+  "ID": "RELATIONSHIP_COLUMNS_SHOULD_BE_OF_INTEGER_DATA_TYPE",
+  "Name": "[Formatting] Relationship columns should be of integer data type",
+  "Category": "Formatting",
+  "Description": "It is a best practice for relationship columns to be of integer data type.",
+  "Severity": 1,
+  "Scope": "Relationship",
+  "Expression": "FromColumn.DataType != Microsoft.AnalysisServices.Tabular.DataType.Int64 or ToColumn.DataType != Microsoft.AnalysisServices.Tabular.DataType.Int64",
+  "CompatibilityLevel": 1200
+}
+,
   {
     "ID": "HIDE_FOREIGN_KEYS",
     "Name": "[Formatting] Hide foreign keys",
@@ -83,16 +84,17 @@
     "CompatibilityLevel": 1200
   },
   {
-    "ID": "HIDE_FACT_TABLE_COLUMNS",
-    "Name": "[Formatting] Hide fact table columns",
-    "Category": "Formatting",
-    "Description": "Columns in fact tables should generally be hidden (Fact_*).",
-    "Severity": 2,
-    "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
-    "Expression": "IsHidden == false\r\nand IsKey == false\r\nand IsCalculated == false\r\nand IsNameInferred == false\r\nand (not UsedInRelationships.Any())\r\nand (not UsedInSortBy.Any())\r\nand (not UsedInHierarchies.Any())\r\nand Table.Name.StartsWith(\"Fact_\")",
-    "FixExpression": "IsHidden = true",
-    "CompatibilityLevel": 1200
-  },
+  "ID": "HIDE_FACT_TABLE_COLUMNS",
+  "Name": "[Formatting] Hide fact table columns",
+  "Category": "Formatting",
+  "Description": "Columns in fact tables should generally be hidden (Fact_*).",
+  "Severity": 2,
+  "Scope": "DataColumn, CalculatedColumn, CalculatedTableColumn",
+  "Expression": "IsHidden == false\r\nand IsKey == false\r\nand Type.ToString() != \"Calculated\"\r\nand (not UsedInRelationships.Any())\r\nand (not UsedInSortBy.Any())\r\nand (not UsedInHierarchies.Any())\r\nand Table.Name.StartsWith(\"Fact_\")",
+  "FixExpression": "IsHidden = true",
+  "CompatibilityLevel": 1200
+}
+,
   {
     "ID": "UNNECESSARY_COLUMNS",
     "Name": "[Maintenance] Remove unnecessary columns",
