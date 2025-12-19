@@ -68,10 +68,9 @@
   "Description": "It is a best practice for relationship columns to be of integer data type.",
   "Severity": 1,
   "Scope": "Relationship",
-  "Expression": "FromColumn.DataType != Microsoft.AnalysisServices.Tabular.DataType.Int64 or ToColumn.DataType != Microsoft.AnalysisServices.Tabular.DataType.Int64",
+  "Expression": "FromColumn.DataType.ToString() != \"Int64\" or ToColumn.DataType.ToString() != \"Int64\"",
   "CompatibilityLevel": 1200
-}
-,
+},
   {
     "ID": "HIDE_FOREIGN_KEYS",
     "Name": "[Formatting] Hide foreign keys",
