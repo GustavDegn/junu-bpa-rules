@@ -13,10 +13,10 @@
   "ID": "USE_THE_DIVIDE_FUNCTION_FOR_DIVISION",
   "Name": "[DAX Expressions] Use the DIVIDE function for division",
   "Category": "DAX Expressions",
-  "Description": "Use the DIVIDE function instead of using \"/\". The DIVIDE function resolves divide-by-zero cases.",
+  "Description": "Use the DIVIDE function instead of using \"/\". The DIVIDE function resolves divide-by-zero cases. Ignores divisions where the denominator is a numeric literal.",
   "Severity": 2,
   "Scope": "Measure, CalculatedColumn, CalculationItem",
-  "Expression": "Expression.Contains(\"/\") and Expression.ToUpper().Contains(\"DIVIDE\") == false",
+  "Expression": "Tokenize().Any(Type = DIV and Next.Type <> INTEGER_LITERAL and Next.Type <> REAL_LITERAL) and Expression.ToUpper().Contains(\"DIVIDE\") == false",
   "CompatibilityLevel": 1200
 },
   {
